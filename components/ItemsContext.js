@@ -22,10 +22,10 @@ export const ItemsProvider = ({ children }) => {
   }, [items]);
 
   const addItem = (newItem) => {
-    setItems((prev) => [...prev, newItem]);
+    setItems((listItem) => [...listItem, newItem]);
   };
     const removeItem = (index) => {
-      setItems((prev) => prev.filter((_, i) => i !== index)); // xoá item theo index
+      setItems((listItem) => listItem.filter((_, i) => i !== index)); // xoá item theo index
     };
 
 
