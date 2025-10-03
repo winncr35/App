@@ -4,10 +4,13 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 
-import Home from './screens/home.js';
-import Cart from './screens/cart.js';
-import Profile from './screens/profile.js';
-import AddScreen from './screens/add.js'
+import Home from './screens/home.jsx';
+import Cart from './screens/cart.jsx';
+import Profile from './screens/profile.jsx';
+import AddScreen from './screens/add.jsx'
+import { Provider as PaperProvider } from 'react-native-paper';
+import { ItemsProvider } from "./components/ItemsContext.js"; // ✅ import context
+
 
 
 
@@ -16,7 +19,8 @@ const Stack = createStackNavigator();
 
 function TabNav({ navigation }) {
   return (
-    <Tab.Navigator>
+    <Tab.Navigator
+        >
       <Tab.Screen
         name="Home"
         component={Home}
@@ -50,12 +54,14 @@ function TabNav({ navigation }) {
         name="Cart"
         component={Cart}
         options={{
+
           tabBarIcon: () => (
             <Image
               source={require('./assets/cart.png')}
               style={{ width: 42, height: 42 }}
             />
-          )
+          ),
+          headerShown: false
         }}
       />
 
@@ -68,7 +74,8 @@ function TabNav({ navigation }) {
               source={require('./assets/profile.png')}
               style={{ width: 28, height: 28 }}
             />
-          )
+          ),
+          headerShown: false
         }}
       />
     </Tab.Navigator>
@@ -77,21 +84,26 @@ function TabNav({ navigation }) {
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        {/* Tab chính */}
-        <Stack.Screen
-          name="Tabs"
-          component={TabNav}
-          options={{ headerShown: false }}
-        />
-        {/* Màn hình Add (không có tab bar) */}
-        <Stack.Screen
-          name="Add"
-          component={AddScreen}
-          options={{ title: "Your Item" }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+      <PaperProvider>
+          <ItemsProvider>
+            <NavigationContainer>
+              <Stack.Navigator>
+                {/* Tab chính */}
+                <Stack.Screen
+                  name="Tabs"
+                  component={TabNav}
+                  options={{ headerShown: false }}
+                />
+                {/* Màn hình Add (không có tab bar) */}
+                <Stack.Screen
+                  name="Add"
+                  component={AddScreen}
+                  options={{ title: "Your Item" }}
+                />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </ItemsProvider>
+      </PaperProvider>
+
   );
 }

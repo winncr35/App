@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState,useContext } from 'react';
 import { View, Button, Image, PermissionsAndroid, Alert, Platform } from 'react-native';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import { ItemsContext } from "../components/ItemsContext.js";
 
-export default function AddScreen() {
+export default function AddScreen({navigation}) {
   const [photo, setPhoto] = useState(null);
+  const { addItem } = useContext(ItemsContext);
+
 
   const requestMediaPermission = async () => {
     try {
@@ -33,6 +36,9 @@ export default function AddScreen() {
   };
 
   const pickImage = async () => {
+  setPhoto(
+        Image.resolveAssetSource(require("../assets/mouse.png")).uri
+      );
     const hasPermission = await requestMediaPermission();
     if (!hasPermission) {
       Alert.alert('Bạn chưa cấp quyền');
@@ -59,6 +65,15 @@ export default function AddScreen() {
       }
     });
   };
+const savePhoto = () => {
+  if (photo) {
+    addItem(photo); // ✅ lưu vào context
+    navigation.goBack(); // quay về Home
+  } else {
+    Alert.alert("Bạn chưa chọn ảnh");
+  }
+};
+
 
   return (
     <View style={{ flex: 1, padding: 20 }}>
@@ -71,6 +86,7 @@ export default function AddScreen() {
           style={{ width: '100%', height: 300, marginTop: 20 }}
         />
       )}
+      <Button title="Lưu" onPress={savePhoto} />
     </View>
   );
 }
