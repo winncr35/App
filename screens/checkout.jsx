@@ -120,11 +120,16 @@ function Checkout({ navigation }) {
         keyboardType="numeric"
         value={cardNumber}
         onChangeText={(text) => {
-          const digits = text.replace(/[^0-9]/g, ""); // chỉ giữ số
-          const limited = digits.slice(0, 16); // 🚫 chặn quá 16 số
-          setCardNumber(limited);
+          let digits = text.replace(/[^0-9]/g, "");
+
+          if (digits.length > 16) digits = digits.slice(0, 16);
+
+          let formatted = digits.replace(/(.{4})/g, "$1 ").trim();
+
+          setCardNumber(formatted);
         }}
       />
+
 
 
       <Text style={styles.label}>Expiry (MM/YY):</Text>
