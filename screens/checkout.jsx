@@ -13,6 +13,11 @@ import { ItemsContext } from "../components/ItemsContext";
 function Checkout({ navigation }) {
   const { cartItems, setCartItems } = useContext(ItemsContext);
   const [address, setAddress] = useState("");
+  const [cardName, setCardName] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvv, setCvv] = useState("");
+
 
   // ✅ Tính tổng tiền
   const total = cartItems.reduce(
@@ -25,6 +30,20 @@ function Checkout({ navigation }) {
       Alert.alert("Missing Information", "Please enter your delivery address.");
       return;
     }
+      if (!cardName.trim() || !cardNumber.trim() || !expiry.trim() || !cvv.trim()) {
+        Alert.alert("Missing Information", "Please fill out all payment details.");
+        return;
+      }
+
+      if (cardNumber.length < 16) {
+        Alert.alert("Invalid Card", "Card number must be at least 16 digits.");
+        return;
+      }
+
+      if (cvv.length < 3) {
+        Alert.alert("Invalid CVV", "CVV must be 3 digits.");
+        return;
+      }
 
     Alert.alert(
       "Order Placed!",
@@ -74,6 +93,47 @@ function Checkout({ navigation }) {
         value={address}
         onChangeText={setAddress}
       />
+      <Text style={styles.label}>Card Holder Name:</Text>
+      <TextInput
+        placeholder="Name on card"
+        style={styles.input}
+        value={cardName}
+        onChangeText={setCardName}
+      />
+
+      <Text style={styles.label}>Card Number:</Text>
+      <TextInput
+        placeholder="1234 5678 9012 3456"
+        style={styles.input}
+        keyboardType="numeric"
+        value={cardNumber}
+        onChangeText={setCardNumber}
+      />
+
+      <View style={{ flexDirection: "row", gap: 10 }}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.label}>Expiry (MM/YY):</Text>
+          <TextInput
+            placeholder="08/27"
+            style={styles.input}
+            value={expiry}
+            onChangeText={setExpiry}
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.label}>CVV:</Text>
+          <TextInput
+            placeholder="123"
+            style={styles.input}
+            keyboardType="numeric"
+            secureTextEntry
+            value={cvv}
+            onChangeText={setCvv}
+          />
+        </View>
+      </View>
+
 
       <TouchableOpacity style={styles.checkoutBtn} onPress={handlePlaceOrder}>
         <Text style={styles.checkoutText}>PLACE ORDER</Text>
