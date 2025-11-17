@@ -18,8 +18,13 @@ function Checkout({ navigation }) {
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
 
+  const formatExpiry = (value) => {
+    value = value.replace(/[^0-9]/g, "");
+    if (value.length > 4) value = value.slice(0, 4);
+    if (value.length >= 3) value = value.slice(0, 2) + "/" + value.slice(2);
+    return value;
+  };
 
-  // ✅ Tính tổng tiền
   const total = cartItems.reduce(
     (sum, item) => sum + parseFloat(item.price || 0),
     0
@@ -30,20 +35,26 @@ function Checkout({ navigation }) {
       Alert.alert("Missing Information", "Please enter your delivery address.");
       return;
     }
-      if (!cardName.trim() || !cardNumber.trim() || !expiry.trim() || !cvv.trim()) {
-        Alert.alert("Missing Information", "Please fill out all payment details.");
-        return;
-      }
 
-      if (cardNumber.length < 16) {
-        Alert.alert("Invalid Card", "Card number must be at least 16 digits.");
-        return;
-      }
+    if (!cardName.trim() || !cardNumber.trim() || !expiry.trim() || !cvv.trim()) {
+      Alert.alert("Missing Information", "Please fill out all payment details.");
+      return;
+    }
 
-      if (cvv.length < 3) {
-        Alert.alert("Invalid CVV", "CVV must be 3 digits.");
-        return;
-      }
+    if (cardNumber.replace(/[^0-9]/g, "").length < 16) {
+      Alert.alert("Invalid Card", "Card number must be at least 16 digits.");
+      return;
+    }
+
+    if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+      Alert.alert("Invalid Expiry", "Expiry format must be MM/YY.");
+      return;
+    }
+
+    if (cvv.length !== 3) {
+      Alert.alert("Invalid CVV", "CVV must be exactly 3 digits.");
+      return;
+    }
 
     Alert.alert(
       "Order Placed!",
@@ -52,9 +63,8 @@ function Checkout({ navigation }) {
         {
           text: "OK",
           onPress: () => {
-            setCartItems([]); // Xóa giỏ hàng
+            setCartItems([]);
             navigation.navigate("BuyerTabs", { screen: "Home" });
- // 👈 Quay lại Home
           },
         },
       ]
@@ -80,6 +90,7 @@ function Checkout({ navigation }) {
             <Text style={styles.itemPrice}>${item.price}</Text>
           </View>
         ))}
+
         <View style={styles.totalRow}>
           <Text style={styles.totalLabel}>Total:</Text>
           <Text style={styles.totalPrice}>${total.toFixed(2)}</Text>
@@ -93,6 +104,7 @@ function Checkout({ navigation }) {
         value={address}
         onChangeText={setAddress}
       />
+
       <Text style={styles.label}>Card Holder Name:</Text>
       <TextInput
         placeholder="Name on card"
@@ -107,33 +119,34 @@ function Checkout({ navigation }) {
         style={styles.input}
         keyboardType="numeric"
         value={cardNumber}
-        onChangeText={setCardNumber}
+        onChangeText={(text) => {
+          const digits = text.replace(/[^0-9]/g, ""); // chỉ giữ số
+          const limited = digits.slice(0, 16); // 🚫 chặn quá 16 số
+          setCardNumber(limited);
+        }}
       />
 
-      <View style={{ flexDirection: "row", gap: 10 }}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.label}>Expiry (MM/YY):</Text>
-          <TextInput
-            placeholder="08/27"
-            style={styles.input}
-            value={expiry}
-            onChangeText={setExpiry}
-          />
-        </View>
 
-        <View style={{ flex: 1 }}>
-          <Text style={styles.label}>CVV:</Text>
-          <TextInput
-            placeholder="123"
-            style={styles.input}
-            keyboardType="numeric"
-            secureTextEntry
-            value={cvv}
-            onChangeText={setCvv}
-          />
-        </View>
-      </View>
+      <Text style={styles.label}>Expiry (MM/YY):</Text>
+      <TextInput
+        placeholder="MM/YY"
+        style={styles.input}
+        keyboardType="numeric"
+        value={expiry}
+        onChangeText={(text) => setExpiry(formatExpiry(text))}
+      />
 
+      <Text style={styles.label}>CVV:</Text>
+      <TextInput
+        placeholder="123"
+        style={styles.input}
+        keyboardType="numeric"
+        secureTextEntry
+        value={cvv}
+        onChangeText={(text) =>
+          setCvv(text.replace(/[^0-9]/g, "").slice(0, 3))
+        }
+      />
 
       <TouchableOpacity style={styles.checkoutBtn} onPress={handlePlaceOrder}>
         <Text style={styles.checkoutText}>PLACE ORDER</Text>
@@ -205,13 +218,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 8,
+    marginTop: 5,
   },
   input: {
     backgroundColor: "#fff",
     borderRadius: 10,
     padding: 10,
     fontSize: 16,
-    marginBottom: 25,
+    marginBottom: 20,
     borderWidth: 1,
     borderColor: "#ccc",
   },
@@ -221,6 +235,7 @@ const styles = StyleSheet.create({
     height: 55,
     justifyContent: "center",
     alignItems: "center",
+    marginTop: 10,
   },
   checkoutText: {
     color: "white",
