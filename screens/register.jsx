@@ -1,8 +1,9 @@
 import React, { useState, useContext } from "react";
-import { View, StyleSheet, Alert } from "react-native";
-import { Text, TextInput, Button } from "react-native-paper";
+import { View, StyleSheet, Alert, TouchableOpacity } from "react-native";
+import { Text, TextInput } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
 import { AuthContext } from "../components/AuthContext";
+import LinearGradient from "react-native-linear-gradient";
 
 export default function RegisterScreen({ navigation }) {
   const { register } = useContext(AuthContext);
@@ -18,10 +19,12 @@ export default function RegisterScreen({ navigation }) {
   const [reqErr, setReqErr] = useState("");
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const passRegex  = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
   const validate = () => {
-    setEmailErr(""); setPassErr(""); setReqErr("");
+    setEmailErr("");
+    setPassErr("");
+    setReqErr("");
 
     if (!name.trim() || !email.trim() || !password.trim()) {
       setReqErr("All required fields must be completed (name, email, password).");
@@ -42,8 +45,14 @@ export default function RegisterScreen({ navigation }) {
     if (!validate()) return;
 
     try {
-      // register() nên trả { success: true } khi OK, hoặc throw khi lỗi
-      const res = await register({ name: name.trim(), email: email.trim(), password, phone, role });
+      const res = await register({
+        name: name.trim(),
+        email: email.trim(),
+        password,
+        phone,
+        role,
+      });
+
       if (res?.success) {
         Alert.alert("Success", "Account created successfully!", [
           { text: "OK", onPress: () => navigation.navigate("Login") },
@@ -59,14 +68,19 @@ export default function RegisterScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text variant="titleLarge" style={{ marginBottom: 16 }}>Create Account</Text>
+      <Text variant="titleLarge" style={styles.header}>
+        Create Account
+      </Text>
 
       {!!reqErr && <Text style={styles.err}>{reqErr}</Text>}
 
       <TextInput
         label="Email"
         value={email}
-        onChangeText={(t)=>{ setEmail(t); setEmailErr(""); }}
+        onChangeText={(t) => {
+          setEmail(t);
+          setEmailErr("");
+        }}
         style={styles.input}
         keyboardType="email-address"
         autoCapitalize="none"
@@ -77,7 +91,10 @@ export default function RegisterScreen({ navigation }) {
       <TextInput
         label="Password"
         value={password}
-        onChangeText={(t)=>{ setPassword(t); setPassErr(""); }}
+        onChangeText={(t) => {
+          setPassword(t);
+          setPassErr("");
+        }}
         style={styles.input}
         secureTextEntry
         error={!!passErr}
@@ -99,26 +116,56 @@ export default function RegisterScreen({ navigation }) {
         keyboardType="phone-pad"
       />
 
-      <Text style={{ marginBottom: 4, marginTop: 6 }}>Role</Text>
+      <Text style={styles.roleLabel}>Role</Text>
       <Picker selectedValue={role} onValueChange={setRole} style={styles.picker}>
         <Picker.Item label="Buyer" value="buyer" />
         <Picker.Item label="Seller" value="seller" />
       </Picker>
 
-      <Button mode="contained" onPress={onSubmit} style={{ marginTop: 14 }}>
-        Register
-      </Button>
+      {/* ===== GRADIENT REGISTER BUTTON ===== */}
+      <TouchableOpacity onPress={onSubmit} style={{ marginTop: 16 }}>
+        <LinearGradient
+          colors={["#F58632", "#007bff"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.gradientBtn}
+        >
+          <Text style={styles.gradientBtnText}>Register</Text>
+        </LinearGradient>
+      </TouchableOpacity>
 
-      <Button onPress={() => navigation.navigate("Login")} style={{ marginTop: 8 }}>
-        Already have an account? Login
-      </Button>
+      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+        <Text style={styles.loginLink}>Already have an account? Login</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, justifyContent: "center" },
+  header: { marginBottom: 16, fontWeight: "700", fontSize: 24, textAlign: "center" },
   input: { marginBottom: 10 },
   picker: { backgroundColor: "#fff", borderRadius: 8 },
+  roleLabel: { marginBottom: 4, marginTop: 6 },
   err: { color: "#b00020", marginBottom: 6 },
+
+  gradientBtn: {
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  gradientBtnText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+
+  loginLink: {
+    textAlign: "center",
+    marginTop: 12,
+    color: "#007bff",
+    fontWeight: "600",
+  },
 });

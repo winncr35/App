@@ -69,7 +69,7 @@ export default function ItemDetail({ route, navigation }) {
           {canDelete && (
             <Button
               mode="contained"
-              buttonColor="#d32f2f"
+              buttonColor="#F58632"
               style={{ marginTop: 12 }}
               onPress={handleDelete}
             >

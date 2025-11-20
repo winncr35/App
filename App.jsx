@@ -67,7 +67,7 @@ function BuyerTabs({ navigation }) {
           headerShown: false,
           tabBarIcon: () => (
             <View>
-              <Image source={require("./assets/cart.png")} style={{ width: 36, height: 36 }} />
+              <Image source={require("./assets/cart.png")} style={{ width: 36, height: 45 }} />
               {cartItems.length > 0 && (
                 <View
                   style={{

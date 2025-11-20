@@ -174,7 +174,7 @@ useEffect(() => {
                         <Button
                           mode="contained"
                           icon="pencil"
-                          buttonColor="#1976d2"
+                          buttonColor="#007bff"
                           textColor="white"
                           style={styles.deleteButton}
                           onPress={() => navigation.navigate("Add", { editItem: item })}
@@ -185,7 +185,7 @@ useEffect(() => {
                         <Button
                           mode="contained"
                           icon="delete"
-                          buttonColor="#F44336"
+                          buttonColor="#F58632"
                           textColor="white"
                           style={styles.deleteButton}
                           onPress={() => deleteListing(item.id)}
@@ -201,7 +201,7 @@ useEffect(() => {
                         <Button
                           mode="contained"
                           icon="pencil"
-                          buttonColor="#1976d2"
+                          buttonColor="#007bff"
                           textColor="white"
                           style={styles.deleteButton}
                           onPress={() => navigation.navigate("Add", { editItem: item })}
@@ -212,7 +212,7 @@ useEffect(() => {
                         <Button
                           mode="contained"
                           icon="delete"
-                          buttonColor="#b30000"
+                          buttonColor="#F58632"
                           textColor="white"
                           style={styles.deleteButton}
                           onPress={() => deleteListing(item.id)}

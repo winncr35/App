@@ -192,24 +192,40 @@ app.get("/admin/users", async (req, res) => {
   );
   res.json(users);
 });
+// DELETE USER (admin only)
+app.post("/admin/user/delete", async (req, res) => {
+  const { id } = req.body;
+  const db = await dbPromise;
 
-// Bật/tắt user
+  // no delete for admin
+  const user = await db.get("SELECT role FROM users WHERE id = ?", [id]);
+  if (user && user.role === "admin") {
+    return res.status(400).json({ error: "Admin account cannot be deleted" });
+  }
+
+  // delete user
+  await db.run("DELETE FROM users WHERE id = ?", [id]);
+
+  res.json({ success: true });
+});
+
+// on/off user
 app.post("/admin/user/toggle", async (req, res) => {
   const { id, disabled } = req.body;
   const db = await dbPromise;
 
   const user = await db.get("SELECT role FROM users WHERE id = ?", [id]);
-  if (user && user.role === "admin")
-    return res
-      .status(400)
-      .json({ error: "⚠️ You cannot disable an admin account." });
+  if (user && user.role === "admin") {
+    return res.status(400).json({ error: "⚠️ You cannot disable an admin account." });
+  }
 
-  await db.run("UPDATE users SET disabled = ? WHERE id = ?", [
-    disabled ? 1 : 0,
-    id,
-  ]);
-  res.json({ success: true });
+  const newStatus = Number(disabled) === 1 ? 1 : 0;
+
+  await db.run("UPDATE users SET disabled = ? WHERE id = ?", [newStatus, id]);
+
+  res.json({ success: true, disabled: newStatus });
 });
+
 
 // ================== LISTINGS (Seller) ==================
 

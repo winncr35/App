@@ -37,6 +37,8 @@ function Cart({ navigation }) {
                       "https://via.placeholder.com/300",
                   }}
                   style={{ height: 180 }}
+                  resizeMode="contain"
+
                 />
 
                 <Card.Content>
@@ -81,7 +83,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f2f2f2",
-    paddingTop: Platform.OS === "android" ? 20 : 0, // tránh chạm camera
+    paddingTop: Platform.OS === "android" ? 20 : 0,
   },
 
   card: {
@@ -104,10 +106,10 @@ const styles = StyleSheet.create({
 
   // Nút delete bo tròn
   deleteButton: {
-    backgroundColor: "#d32f2f",
-    paddingVertical: 12,
-    margin: 12,
-    borderRadius: 12,
+    backgroundColor: "#F58632",
+    paddingVertical: 9,
+    margin: 10,
+    borderRadius: 10,
     alignItems: "center",
   },
   deleteText: {
@@ -131,13 +133,13 @@ const styles = StyleSheet.create({
   // Checkout button
   checkoutButton: {
     backgroundColor: "#007bff",
-    borderRadius: 12,
-    height: 60,
-    justifyContent: "center",
-    alignItems: "center",
+    paddingVertical: 12,
+
+        borderRadius: 10,
+        alignItems: "center",
     width: "100%",
     position: "absolute",
-    bottom: 0,
+    bottom: 4,
     left: 0,
   },
   checkoutText: {
