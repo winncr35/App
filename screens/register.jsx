@@ -4,6 +4,7 @@ import { Text, TextInput } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
 import { AuthContext } from "../components/AuthContext";
 import LinearGradient from "react-native-linear-gradient";
+import { RadioButton } from "react-native-paper";
 
 export default function RegisterScreen({ navigation }) {
   const { register } = useContext(AuthContext);
@@ -19,7 +20,8 @@ export default function RegisterScreen({ navigation }) {
   const [reqErr, setReqErr] = useState("");
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  const passRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
   const validate = () => {
     setEmailErr("");
@@ -35,7 +37,9 @@ export default function RegisterScreen({ navigation }) {
       return false;
     }
     if (!passRegex.test(password)) {
-      setPassErr("Min 8 chars, include uppercase, lowercase, number & special char.");
+      setPassErr(
+        "Min 8 chars, include uppercase, lowercase, number & special char."
+      );
       return false;
     }
     return true;
@@ -61,7 +65,8 @@ export default function RegisterScreen({ navigation }) {
         Alert.alert("Registration failed", res?.error || "Please try again.");
       }
     } catch (err) {
-      const msg = err?.response?.data?.error || err?.message || "Registration failed.";
+      const msg =
+        err?.response?.data?.error || err?.message || "Registration failed.";
       Alert.alert("Registration failed", msg);
     }
   };
@@ -74,7 +79,9 @@ export default function RegisterScreen({ navigation }) {
 
       {!!reqErr && <Text style={styles.err}>{reqErr}</Text>}
 
+      {/* --- BEAUTIFUL INPUTS --- */}
       <TextInput
+        mode="outlined"
         label="Email"
         value={email}
         onChangeText={(t) => {
@@ -85,10 +92,12 @@ export default function RegisterScreen({ navigation }) {
         keyboardType="email-address"
         autoCapitalize="none"
         error={!!emailErr}
+        theme={styles.theme}
       />
       {!!emailErr && <Text style={styles.err}>{emailErr}</Text>}
 
       <TextInput
+        mode="outlined"
         label="Password"
         value={password}
         onChangeText={(t) => {
@@ -98,29 +107,53 @@ export default function RegisterScreen({ navigation }) {
         style={styles.input}
         secureTextEntry
         error={!!passErr}
+        theme={styles.theme}
       />
       {!!passErr && <Text style={styles.err}>{passErr}</Text>}
 
       <TextInput
+        mode="outlined"
         label="Name"
         value={name}
         onChangeText={setName}
         style={styles.input}
+        theme={styles.theme}
       />
 
       <TextInput
+        mode="outlined"
         label="Phone Number"
         value={phone}
         onChangeText={setPhone}
         style={styles.input}
         keyboardType="phone-pad"
+        theme={styles.theme}
       />
 
-      <Text style={styles.roleLabel}>Role</Text>
-      <Picker selectedValue={role} onValueChange={setRole} style={styles.picker}>
-        <Picker.Item label="Buyer" value="buyer" />
-        <Picker.Item label="Seller" value="seller" />
-      </Picker>
+
+
+     <View style={styles.radioGroup}>
+       <View style={styles.radioRow}>
+         <RadioButton
+           value="buyer"
+           status={role === "buyer" ? "checked" : "unchecked"}
+           onPress={() => setRole("buyer")}
+           color="#007bff"
+         />
+         <Text style={styles.radioText}>Buyer</Text>
+       </View>
+
+       <View style={styles.radioRow}>
+         <RadioButton
+           value="seller"
+           status={role === "seller" ? "checked" : "unchecked"}
+           onPress={() => setRole("seller")}
+           color="#007bff"
+         />
+         <Text style={styles.radioText}>Seller</Text>
+       </View>
+     </View>
+
 
       {/* ===== GRADIENT REGISTER BUTTON ===== */}
       <TouchableOpacity onPress={onSubmit} style={{ marginTop: 16 }}>
@@ -143,15 +176,43 @@ export default function RegisterScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, justifyContent: "center" },
-  header: { marginBottom: 16, fontWeight: "700", fontSize: 24, textAlign: "center" },
-  input: { marginBottom: 10 },
-  picker: { backgroundColor: "#fff", borderRadius: 8 },
-  roleLabel: { marginBottom: 4, marginTop: 6 },
+  header: {
+    marginBottom: 20,
+    fontWeight: "700",
+    fontSize: 26,
+    textAlign: "center",
+  },
+
+  input: {
+    marginBottom: 16,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+  },
+
+  theme: {
+    roundness: 12,
+    colors: {
+      primary: "#007bff", // border khi focus
+      text: "#000",
+      background: "#fff",
+      placeholder: "#888",
+    },
+  },
+
+  picker: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    marginBottom: 16,
+    paddingHorizontal: 10,
+  },
+
+  roleLabel: { marginBottom: 6, fontWeight: "600" },
+
   err: { color: "#b00020", marginBottom: 6 },
 
   gradientBtn: {
-    paddingVertical: 12,
-    borderRadius: 10,
+    paddingVertical: 14,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -159,7 +220,7 @@ const styles = StyleSheet.create({
   gradientBtnText: {
     color: "#fff",
     fontWeight: "700",
-    fontSize: 16,
+    fontSize: 17,
   },
 
   loginLink: {
@@ -168,4 +229,23 @@ const styles = StyleSheet.create({
     color: "#007bff",
     fontWeight: "600",
   },
+  radioGroup: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+    marginTop: 4,
+  },
+  radioRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 14,   //
+  },
+  radioText: {
+    fontSize: 16,
+    marginLeft: 4,
+    fontWeight: "500",
+  },
+
+
 });

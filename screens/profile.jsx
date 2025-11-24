@@ -131,11 +131,13 @@ export default function Profile() {
           <Text style={styles.emailText}>{user?.email}</Text>
 
           {/* Cart Stats */}
-          <Card style={styles.stats}>
-            <Card.Content>
-              <Text>🛒 Items in Cart: {cartItems.length}</Text>
-            </Card.Content>
-          </Card>
+          {user?.role === "buyer" && (
+            <Card style={styles.stats}>
+              <Card.Content>
+                <Text>🛒 Items in Cart: {cartItems.length}</Text>
+              </Card.Content>
+            </Card>
+          )}
 
           {/* Logout button */}
           <Button

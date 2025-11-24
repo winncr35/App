@@ -33,7 +33,7 @@ function Home({ navigation }) {
       // 🔹 Nếu là seller thì chỉ lấy sản phẩm của họ thôi
       const url =
         user?.role === "seller"
-          ? `http://10.0.2.2:4000/listings?sellerId=${user.id}`
+          ? `http://10.0.2.2:4000/listings?sellerId=${user?.id}`
           : "http://10.0.2.2:4000/listings";
 
       const res = await axios.get(url);
@@ -46,9 +46,11 @@ function Home({ navigation }) {
     }
   };
   const deleteListing = async (id) => {
+      if (!user?.id || !user?.role) return;//crash user null
+
     try {
       await axios.delete(`http://10.0.2.2:4000/listings/${id}`, {
-        data: { userId: user.id, role: user.role },
+        data: { userId: user?.id, role: user?.role },
       });
       alert("✅ Deleted successfully!");
       loadListings(); // refresh lại danh sách

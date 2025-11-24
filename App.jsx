@@ -25,6 +25,7 @@ const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 /* ----------------- BUYER ----------------- */
+/* ----------------- BUYER ----------------- */
 function BuyerTabs({ navigation }) {
   const { cartItems } = React.useContext(ItemsContext);
 
@@ -49,14 +50,8 @@ function BuyerTabs({ navigation }) {
               style={{ width: 150, height: 80, resizeMode: "contain" }}
             />
           ),
-          headerRight: () => (
-            <TouchableOpacity onPress={() => navigation.navigate("Add")}>
-              <Image
-                source={require("./assets/plus.png")}
-                style={{ width: 28, height: 28, marginRight: 10 }}
-              />
-            </TouchableOpacity>
-          ),
+          // ❌ Buyer không được có nút +
+          headerRight: () => null,
         }}
       />
 
@@ -106,6 +101,7 @@ function BuyerTabs({ navigation }) {
     </Tab.Navigator>
   );
 }
+
 
 /* ----------------- SELLER ----------------- */
 function SellerTabs({ navigation }) {
