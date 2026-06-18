@@ -386,6 +386,13 @@ app.post("/orders", async (req, res) => {
     ]
   );
 
+  // Mark purchased listings as sold (inactive)
+  for (const item of items || []) {
+    if (item.id) {
+      await db.run("UPDATE listings SET status = 'inactive' WHERE id = ?", [item.id]);
+    }
+  }
+
   res.json({ success: true, total });
 });
 

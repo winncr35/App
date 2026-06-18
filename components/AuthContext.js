@@ -10,8 +10,12 @@ export const AuthProvider = ({ children }) => {
   // Load login state when app opens
   useEffect(() => {
     const loadUser = async () => {
-      const savedUser = await AsyncStorage.getItem("user");
-      if (savedUser) setUser(JSON.parse(savedUser));
+      try {
+        const savedUser = await AsyncStorage.getItem("user");
+        if (savedUser) setUser(JSON.parse(savedUser));
+      } catch {
+        await AsyncStorage.removeItem("user");
+      }
     };
     loadUser();
   }, []);
