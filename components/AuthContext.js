@@ -5,9 +5,9 @@ import axios from "axios";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // null = chưa login
+  const [user, setUser] = useState(null); // null = not logged in
 
-  // Load trạng thái đăng nhập khi mở app
+  // Load login state when app opens
   useEffect(() => {
     const loadUser = async () => {
       const savedUser = await AsyncStorage.getItem("user");
@@ -16,8 +16,7 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, []);
 
-  const API_URL = "http://10.0.2.2:4000"; // nếu dùng Android emulator
-    // hoặc thay bằng IP Wi-Fi của máy bạn nếu test trên điện thoại thật
+  const API_URL = "http://10.0.2.2:4000"; // for Android emulator; replace with Wi-Fi IP for real device
 const login = async (email, password) => {
   try {
     const res = await axios.post(`${API_URL}/login`, { email, password });

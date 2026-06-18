@@ -28,7 +28,7 @@ export const ItemsProvider = ({ children }) => {
   };
   //  Delete item by index
     const removeItem = (index) => {
-      setItems((listItem) => listItem.filter((_, i) => i !== index)); // xoá item theo index
+      setItems((listItem) => listItem.filter((_, i) => i !== index)); // remove item by index
     };
     const addToCart = (item) => {
       setCartItems(prev => [...prev, item]);

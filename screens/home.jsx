@@ -30,7 +30,7 @@ function Home({ navigation }) {
 
   const loadListings = async () => {
     try {
-      // 🔹 Nếu là seller thì chỉ lấy sản phẩm của họ thôi
+      // If seller, only fetch their own products
       const url =
         user?.role === "seller"
           ? `http://10.0.2.2:4000/listings?sellerId=${user?.id}`
@@ -53,7 +53,7 @@ function Home({ navigation }) {
         data: { userId: user?.id, role: user?.role },
       });
       alert("✅ Deleted successfully!");
-      loadListings(); // refresh lại danh sách
+      loadListings(); // refresh the list
     } catch (err) {
       console.error("❌ Delete failed:", err.message);
       alert(err.response?.data?.error || "❌ Failed to delete");
@@ -147,9 +147,8 @@ useEffect(() => {
                 <Card style={styles.card}>
                   <Card.Cover
                     source={{
-                      uri: item.photos
-                        ? JSON.parse(item.photos)[0]
-                        : item.uri || "https://via.placeholder.com/300",
+                      uri: (() => { try { return item.photos ? JSON.parse(item.photos)[0] : null; } catch { return null; } })()
+                        || item.uri || "https://via.placeholder.com/300",
                     }}
                     style={styles.image}
                   />

@@ -35,9 +35,8 @@ export default function ItemDetail({ route, navigation }) {
     <ScrollView style={styles.container}>
       <Image
         source={{
-          uri: item.photos
-            ? JSON.parse(item.photos)[0]
-            : "https://via.placeholder.com/300",
+          uri: (() => { try { return item.photos ? JSON.parse(item.photos)[0] : null; } catch { return null; } })()
+            || "https://via.placeholder.com/300",
         }}
         style={styles.image}
       />

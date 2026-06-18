@@ -16,7 +16,7 @@ function Cart({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Nếu giỏ hàng rỗng */}
+      {/* If cart is empty */}
       {cartItems.length === 0 ? (
         <View style={styles.emptyBox}>
           <Text style={styles.emptyText}>No Product</Text>
@@ -33,7 +33,7 @@ function Cart({ navigation }) {
                   source={{
                     uri:
                       item.uri ||
-                      (item.photos && JSON.parse(item.photos)[0]) ||
+                      (() => { try { return item.photos ? JSON.parse(item.photos)[0] : null; } catch { return null; } })() ||
                       "https://via.placeholder.com/300",
                   }}
                   style={{ height: 180 }}
@@ -49,7 +49,7 @@ function Cart({ navigation }) {
                   <Text style={styles.itemText}>🏷️ {item.category}</Text>
                 </Card.Content>
 
-                {/* Nút Delete bo tròn đẹp */}
+                {/* Rounded Delete button */}
                 <TouchableOpacity
                   style={styles.deleteButton}
                   onPress={() => removeFromCart(index)}
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 
-  // Nút delete bo tròn
+  // Rounded delete button
   deleteButton: {
     backgroundColor: "#F58632",
     paddingVertical: 9,

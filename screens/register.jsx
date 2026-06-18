@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   theme: {
     roundness: 12,
     colors: {
-      primary: "#007bff", // border khi focus
+      primary: "#007bff", // border when focused
       text: "#000",
       background: "#fff",
       placeholder: "#888",
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   radioRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginHorizontal: 14,   //
+    marginHorizontal: 14,
   },
   radioText: {
     fontSize: 16,

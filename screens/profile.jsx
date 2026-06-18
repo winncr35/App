@@ -28,7 +28,7 @@ export default function Profile() {
   const [avatar, setAvatar] = useState(user?.avatar || null);
   const [editing, setEditing] = useState(false);
 
-  // 📸 Chọn ảnh avatar
+  // Pick avatar image
   const pickAvatar = () => {
     launchImageLibrary({ mediaType: "photo" }, async (res) => {
       if (res.assets?.length) {
@@ -52,7 +52,7 @@ export default function Profile() {
     });
   };
 
-  // 💾 Lưu profile
+  // Save profile
   const saveProfile = async () => {
     try {
       if (!user?.email) {

@@ -8,12 +8,14 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
-  const { logout } = useContext(AuthContext);
+  const { logout, user: currentUser } = useContext(AuthContext);
   const navigation = useNavigation();
 
   const loadUsers = async () => {
     try {
-      const res = await axios.get("http://10.0.2.2:4000/admin/users");
+      const res = await axios.get(
+        `http://10.0.2.2:4000/admin/users?requesterId=${currentUser?.id}`
+      );
       setUsers(res.data);
     } catch (err) {
       console.log("Failed to load users", err.message);
@@ -28,6 +30,7 @@ export default function AdminDashboard() {
     await axios.post("http://10.0.2.2:4000/admin/user/toggle", {
       id: user.id,
       disabled: user.disabled ? 0 : 1,
+      requesterId: currentUser?.id,
     });
     loadUsers();
   };
@@ -49,6 +52,7 @@ export default function AdminDashboard() {
           onPress: async () => {
             await axios.post("http://10.0.2.2:4000/admin/user/delete", {
               id: user.id,
+              requesterId: currentUser?.id,
             });
             loadUsers();
           },
@@ -75,7 +79,7 @@ export default function AdminDashboard() {
               paddingTop: 26,
             }}
           >
-            {/* ❌ DELETE ICON GÓC PHẢI */}
+            {/* ❌ DELETE ICON TOP RIGHT */}
             <TouchableOpacity
               disabled={item.role === "admin"}
               onPress={() => deleteUser(item)}

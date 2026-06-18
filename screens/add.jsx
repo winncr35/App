@@ -33,7 +33,7 @@ export default function AddScreen({ navigation }) {
       setCategory(editItem.category);
       setPrice(String(editItem.price));
 
-      const oldPhoto = editItem.photos ? JSON.parse(editItem.photos)[0] : null;
+      const oldPhoto = (() => { try { return editItem.photos ? JSON.parse(editItem.photos)[0] : null; } catch { return null; } })();
       setPhoto(oldPhoto);
     }
   }, [isEdit]);
@@ -65,6 +65,9 @@ export default function AddScreen({ navigation }) {
   const saveItem = async () => {
     if (!name.trim() || !category.trim() || !price.trim() || !description.trim()) {
       return Alert.alert("Please fill all fields");
+    }
+    if (!photo) {
+      return Alert.alert("Please choose a product image");
     }
 
     const bodyData = {

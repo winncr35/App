@@ -50,7 +50,7 @@ function BuyerTabs({ navigation }) {
               style={{ width: 150, height: 80, resizeMode: "contain" }}
             />
           ),
-          // ❌ Buyer không được có nút +
+          // Buyer does not get the + button
           headerRight: () => null,
         }}
       />

@@ -9,9 +9,11 @@ import {
   ScrollView,
 } from "react-native";
 import { ItemsContext } from "../components/ItemsContext";
+import { AuthContext } from "../components/AuthContext";
 
 function Checkout({ navigation }) {
   const { cartItems, setCartItems } = useContext(ItemsContext);
+  const { user } = useContext(AuthContext);
   const [address, setAddress] = useState("");
   const [cardName, setCardName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
@@ -30,7 +32,7 @@ function Checkout({ navigation }) {
     0
   );
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     if (!address.trim()) {
       Alert.alert("Missing Information", "Please enter your delivery address.");
       return;
@@ -54,6 +56,21 @@ function Checkout({ navigation }) {
     if (cvv.length !== 3) {
       Alert.alert("Invalid CVV", "CVV must be exactly 3 digits.");
       return;
+    }
+
+    try {
+      await fetch("http://10.0.2.2:4000/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          buyerId: user?.id,
+          items: cartItems,
+          paymentMethod: "card",
+          shippingInfo: { address },
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to save order:", err.message);
     }
 
     Alert.alert(
@@ -86,7 +103,7 @@ function Checkout({ navigation }) {
       <View style={styles.summaryBox}>
         {cartItems.map((item, index) => (
           <View key={index} style={styles.itemRow}>
-            <Text style={styles.itemText}>{item.name}</Text>
+            <Text style={styles.itemText}>{item.title || item.name}</Text>
             <Text style={styles.itemPrice}>${item.price}</Text>
           </View>
         ))}

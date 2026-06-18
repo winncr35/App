@@ -4,6 +4,7 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
+import bcrypt from "bcryptjs";
 
 const app = express();
 app.use(cors());
@@ -15,7 +16,7 @@ const dbPromise = open({
   driver: sqlite3.Database,
 });
 
-// Tạo bảng nếu chưa có
+// Create tables if they don't exist
 (async () => {
   const db = await dbPromise;
 
@@ -63,28 +64,43 @@ const dbPromise = open({
     );
   `);
 
-  // Seed admin nếu chưa có
+  // Seed admin if not exists
   const admin = await db.get("SELECT * FROM users WHERE email = ?", [
     "admin@gmail.com",
   ]);
   if (!admin) {
+    const hashed = await bcrypt.hash("123456", 10);
     await db.run(
       "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
-      ["Admin", "admin@gmail.com", "123456", "admin"]
+      ["Admin", "admin@gmail.com", hashed, "admin"]
     );
-    console.log("👑 Seeded admin: admin@gmail.com / 123456");
+    console.log("👑 Admin account seeded.");
   }
 })();
 
+// ================== MIDDLEWARE ==================
+
+// Verify that the requesterId in the body is actually an admin in the DB
+const requireAdmin = async (req, res, next) => {
+  const requesterId = req.body?.requesterId || req.query?.requesterId;
+  if (!requesterId) return res.status(401).json({ error: "Unauthorized" });
+
+  const db = await dbPromise;
+  const requester = await db.get("SELECT role FROM users WHERE id = ?", [requesterId]);
+  if (!requester || requester.role !== "admin") {
+    return res.status(403).json({ error: "Admin access required" });
+  }
+  next();
+};
+
 // ================== AUTH ==================
 
-// Register
-// Register (debug + validate chuẩn)
+// Register (with validation)
 app.post("/register", async (req, res) => {
   let { name, email, password, phone, role } = req.body;
   const db = await dbPromise;
 
-  // ✅ Ép chuỗi + trim (tránh undefined/null)
+  // Force string + trim (avoid undefined/null)
   name = String(name ?? "").trim();
   email = String(email ?? "").trim();
   password = String(password ?? "").trim();
@@ -117,7 +133,7 @@ app.post("/register", async (req, res) => {
   }
 
   try {
-    // ⚠️ Kiểm tra email trùng (case-insensitive)
+    // Check for duplicate email (case-insensitive)
     const existing = await db.get(
       "SELECT id, email FROM users WHERE LOWER(email) = LOWER(?)",
       [email]
@@ -127,10 +143,10 @@ app.post("/register", async (req, res) => {
       return res.status(400).json({ error: "Email already exists." });
     }
 
-    // ✅ Insert user
+    const hashedPassword = await bcrypt.hash(password, 10);
     await db.run(
       "INSERT INTO users (name, email, password, phone, role) VALUES (?, ?, ?, ?, ?)",
-      [name, email, password, phone, role]
+      [name, email, hashedPassword, phone, role]
     );
 
     console.log("✅ Registered new user:", email);
@@ -146,21 +162,24 @@ app.post("/register", async (req, res) => {
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   const db = await dbPromise;
+
   const user = await db.get(
-    "SELECT id, name, email, avatar, role, disabled FROM users WHERE email = ? AND password = ?",
-    [email, password]
+    "SELECT id, name, email, avatar, role, disabled, password as pw FROM users WHERE email = ?",
+    [email]
   );
 
-  if (!user)
-    return res.status(401).json({ error: "Invalid email or password" });
+  if (!user) return res.status(401).json({ error: "Invalid email or password" });
+
+  const match = await bcrypt.compare(password, user.pw);
+  if (!match) return res.status(401).json({ error: "Invalid email or password" });
 
   if (user.disabled)
     return res.status(403).json({
-      error:
-        "Your account has been temporarily restricted. Please contact support.",
+      error: "Your account has been temporarily restricted. Please contact support.",
     });
 
-  res.json(user);
+  const { pw, ...userData } = user;
+  res.json(userData);
 });
 
 // Update profile
@@ -184,52 +203,48 @@ app.post("/update-profile", async (req, res) => {
 
 // ================== ADMIN ==================
 
-// Lấy toàn bộ user
-app.get("/admin/users", async (req, res) => {
+// Get all users
+app.get("/admin/users", requireAdmin, async (req, res) => {
   const db = await dbPromise;
   const users = await db.all(
     "SELECT id, name, email, phone, avatar, role, disabled FROM users ORDER BY id DESC"
   );
   res.json(users);
 });
+
 // DELETE USER (admin only)
-app.post("/admin/user/delete", async (req, res) => {
+app.post("/admin/user/delete", requireAdmin, async (req, res) => {
   const { id } = req.body;
   const db = await dbPromise;
 
-  // no delete for admin
   const user = await db.get("SELECT role FROM users WHERE id = ?", [id]);
   if (user && user.role === "admin") {
     return res.status(400).json({ error: "Admin account cannot be deleted" });
   }
 
-  // delete user
   await db.run("DELETE FROM users WHERE id = ?", [id]);
-
   res.json({ success: true });
 });
 
-// on/off user
-app.post("/admin/user/toggle", async (req, res) => {
+// Enable / Disable user
+app.post("/admin/user/toggle", requireAdmin, async (req, res) => {
   const { id, disabled } = req.body;
   const db = await dbPromise;
 
   const user = await db.get("SELECT role FROM users WHERE id = ?", [id]);
   if (user && user.role === "admin") {
-    return res.status(400).json({ error: "⚠️ You cannot disable an admin account." });
+    return res.status(400).json({ error: "You cannot disable an admin account." });
   }
 
   const newStatus = Number(disabled) === 1 ? 1 : 0;
-
   await db.run("UPDATE users SET disabled = ? WHERE id = ?", [newStatus, id]);
-
   res.json({ success: true, disabled: newStatus });
 });
 
 
 // ================== LISTINGS (Seller) ==================
 
-// Tạo listing
+// Create listing
 app.post("/listings", async (req, res) => {
   const { sellerId, title, description, category, price, condition, photos } =
     req.body;
@@ -240,7 +255,7 @@ app.post("/listings", async (req, res) => {
       `INSERT INTO listings (sellerId, title, description, category, price, condition, photos)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
-        Number(sellerId) || 0, // ✅ ép kiểu an toàn, tránh null
+        Number(sellerId) || 0,
         title?.trim() || "Untitled",
         description || "",
         category || "",
@@ -257,7 +272,7 @@ app.post("/listings", async (req, res) => {
   }
 });
 
-// Lấy listings
+// Get listings
 app.get("/listings", async (req, res) => {
   const db = await dbPromise;
   const { q, category, min, max, sellerId } = req.query;
@@ -265,7 +280,7 @@ app.get("/listings", async (req, res) => {
   let sql = "SELECT * FROM listings WHERE status = 'active'";
   const params = [];
 
-  // 👇 Nếu có sellerId => chỉ lấy sản phẩm của seller đó
+  // If sellerId provided, only fetch that seller's products
   if (sellerId) {
     sql += " AND sellerId = ?";
     params.push(sellerId);
@@ -292,23 +307,19 @@ app.get("/listings", async (req, res) => {
   res.json(rows);
 });
 
-// Xoá listing
+// Delete listing
 app.delete("/listings/:id", async (req, res) => {
   const { id } = req.params;
-  const { userId, role } = req.body; // axios.delete gửi qua `data`
+  const { userId, role } = req.body;
   const db = await dbPromise;
 
   try {
-    const listing = await db.get("SELECT sellerId FROM listings WHERE id = ?", [
-      id,
-    ]);
+    const listing = await db.get("SELECT sellerId FROM listings WHERE id = ?", [id]);
     if (!listing) return res.status(404).json({ error: "Listing not found" });
 
-    // Chỉ admin hoặc seller của sản phẩm được xoá
-    if (role !== "admin" && listing.sellerId !== userId)
-      return res
-        .status(403)
-        .json({ error: "Unauthorized to delete this listing" });
+    // Only admin or the listing's seller can delete
+    if (role !== "admin" && Number(listing.sellerId) !== Number(userId))
+      return res.status(403).json({ error: "Unauthorized to delete this listing" });
 
     await db.run("DELETE FROM listings WHERE id = ?", [id]);
     res.json({ success: true });
@@ -317,7 +328,8 @@ app.delete("/listings/:id", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-// 📝 Update listing
+
+// Update listing
 app.put("/listings/:id", async (req, res) => {
   const { id } = req.params;
   const { sellerId, title, description, category, price, condition, photos, role } = req.body;
@@ -327,8 +339,8 @@ app.put("/listings/:id", async (req, res) => {
     const existing = await db.get("SELECT sellerId FROM listings WHERE id = ?", [id]);
     if (!existing) return res.status(404).json({ error: "Listing not found" });
 
-    // 🔐 Chỉ cho phép admin hoặc seller chính sửa
-    if (role !== "admin" && existing.sellerId !== sellerId) {
+    // Only admin or the listing's seller can edit
+    if (role !== "admin" && Number(existing.sellerId) !== Number(sellerId)) {
       return res.status(403).json({ error: "Unauthorized to edit this listing" });
     }
 
@@ -369,7 +381,7 @@ app.post("/orders", async (req, res) => {
       buyerId || null,
       JSON.stringify(items || []),
       total,
-      paymentMethod || "mock",
+      paymentMethod || "card",
       shippingInfo ? JSON.stringify(shippingInfo) : null,
     ]
   );
@@ -381,4 +393,3 @@ app.post("/orders", async (req, res) => {
 app.listen(4000, () =>
   console.log("✅ Backend running on http://localhost:4000")
 );
-//rm db.sqlite3
